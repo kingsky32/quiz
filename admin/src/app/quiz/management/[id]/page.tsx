@@ -1,5 +1,6 @@
 import 'react-quill/dist/quill.snow.css';
 import React from 'react';
+import type { DefaultOptionType } from 'rc-tree-select/lib/TreeSelect';
 import { produce } from 'immer';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -11,9 +12,9 @@ import {
   InputNumber,
   message,
   Row,
-  Select,
   Space,
   Spin,
+  TreeSelect,
 } from 'antd';
 import ReactQuill from 'react-quill';
 import Api from '../../../../apis/api';
@@ -85,18 +86,26 @@ function Form({
         name="quizCategoryId"
         label="퀴즈 분류"
       >
-        <Select
+        <TreeSelect
           showSearch
-          optionFilterProp="label"
           placeholder="퀴즈 분류를 선택해주세요"
           style={{ width: 200 }}
-          options={quizCategoriesQuery.data?.data.map((response) => {
-            return {
-              key: `Quiz-Category-${response.id}`,
-              label: response.name,
-              value: response.id,
-            };
-          })}
+          treeData={(() => {
+            function recursive(
+              // eslint-disable-next-line @typescript-eslint/no-shadow
+              quizCategory: Api.QuizCategory.Dto.Response,
+            ): DefaultOptionType {
+              const option: DefaultOptionType = {
+                title: quizCategory.name,
+                value: quizCategory.id,
+              };
+              if (quizCategory.children) {
+                option.children = quizCategory.children.map(recursive);
+              }
+              return option;
+            }
+            return quizCategoriesQuery.data?.data.map(recursive);
+          })()}
           loading={quizCategoriesQuery.isLoading}
         />
       </AntdForm.Item>
