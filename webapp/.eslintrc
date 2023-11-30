@@ -1,0 +1,59 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "extends": [
+    "plugin:tailwindcss/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "airbnb",
+    "airbnb-typescript",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "react/jsx-props-no-spreading": 0,
+    "import/prefer-default-export": 0,
+    "no-param-reassign": 0,
+    "no-alert": 0,
+    "react/require-default-props": 0,
+    "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/no-empty-interface": 0,
+    "react/destructuring-assignment": 0,
+    "prefer-promise-reject-errors": 0,
+    "import/no-named-as-default": 0,
+    "jsx-a11y/label-has-associated-control": [
+      2,
+      {
+        "labelAttributes": ["htmlFor"]
+      }
+    ],
+    "no-nested-ternary": 0,
+    "react/no-array-index-key": 0,
+    "react/prop-types": 0,
+    "max-classes-per-file": 0,
+    "@typescript-eslint/ban-ts-comment": 0,
+    "@typescript-eslint/no-throw-literal": 0,
+    "@typescript-eslint/naming-convention": 0,
+    "no-underscore-dangle": 0,
+    "prettier/prettier": ["error", { "endOfLine": "auto" }],
+    "@typescript-eslint/no-namespace": 0,
+    "no-restricted-syntax": 0,
+    "jsx-a11y/anchor-is-valid": 0,
+    "no-restricted-exports": 0,
+    "react/no-unknown-property": [
+      2,
+      {
+        "ignore": ["jsx", "global"]
+      }
+    ],
+    "react/no-unstable-nested-components": ["error", { "allowAsProps": true }]
+  },
+  "settings": {
+    "tailwindcss": {
+      "config": "tailwind.config.js",
+      "callees": ["classNames", "classnames", "className"]
+    }
+  }
+}

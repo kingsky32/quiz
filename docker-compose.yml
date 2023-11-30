@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  nginx:
+    build:
+      context: nginx
+      dockerfile: Dockerfile
+    container_name: quiz-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+  mysql:
+    build:
+      context: mysql
+      dockerfile: Dockerfile
+    container_name: quiz-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+  redis:
+    build:
+      context: redis
+      dockerfile: Dockerfile
+    container_name: quiz-redis
+    ports:
+      - "6379:6379"
+    labels:
+      - "name=redis"
+      - "mode=standalone"

@@ -1,0 +1,62 @@
+server:
+  port: 8080
+  error:
+    include-exception: true
+    include-message: always
+    include-stacktrace: on_param
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+
+app:
+  name: quiz-api
+  version: 0.0.1
+
+logging:
+  level:
+    root: info
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+  datasource:
+    url:
+    username:
+    password:
+  data:
+    redis:
+      repositories:
+        enabled: false
+      host:
+      port:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 10GB
+
+jwt:
+  secret-key:
+  access-token-expires: 60000
+  refresh-token-expires: 3600000
+
+cloud:
+  aws:
+    sts:
+      region:
+    s3:
+      bucket:
+      region:
