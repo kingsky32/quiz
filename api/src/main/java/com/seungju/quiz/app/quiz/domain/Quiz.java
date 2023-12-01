@@ -1,6 +1,7 @@
 package com.seungju.quiz.app.quiz.domain;
 
 import com.seungju.quiz.app.file.domain.File;
+import com.seungju.quiz.app.room.domain.RoomQuiz;
 import com.seungju.quiz.app.user.domain.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -40,7 +41,7 @@ public class Quiz {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sound_file_id")
     private File soundFile;
 
@@ -53,7 +54,7 @@ public class Quiz {
     private Boolean isActive = false;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "created_by_id")
     @CreatedBy
     private User createdBy;
@@ -71,10 +72,13 @@ public class Quiz {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "quiz")
+    @OneToMany(mappedBy = "quiz", fetch = FetchType.EAGER)
     private List<QuizAnswer> quizAnswers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "quiz")
+    @OneToMany(mappedBy = "quiz", fetch = FetchType.EAGER)
     private List<QuizHint> quizHints = new ArrayList<>();
+
+    @OneToMany(mappedBy = "quiz")
+    private List<RoomQuiz> roomQuizzes = new ArrayList<>();
 
 }

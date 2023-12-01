@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "room")
+@EntityListeners(AuditingEntityListener.class)
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +36,14 @@ public class Room {
     private String title;
 
     @NotNull
+    @Column(name = "current_number", nullable = false)
+    private Long currentNumber;
+
+    @NotNull
+    @Column(name = "number_of_quiz", nullable = false)
+    private Long numberOfQuiz;
+
+    @NotNull
     @Column(name = "is_secret", nullable = false)
     private Boolean isSecret = false;
 
@@ -42,10 +54,12 @@ public class Room {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_id", nullable = false, referencedColumnName = "id")
+    @CreatedBy
     private User createdBy;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
     @Column(name = "deleted_at")
@@ -54,8 +68,11 @@ public class Room {
     @OneToMany(mappedBy = "room")
     private List<RoomChat> roomChats = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room")
+    @OneToMany(mappedBy = "room", fetch = FetchType.EAGER)
     private List<RoomQuizCategory> roomQuizCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room")
+    private List<RoomQuiz> roomQuizzes = new ArrayList<>();
 
     public enum Status {
         READY,

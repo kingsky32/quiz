@@ -10,6 +10,7 @@ public class UserDto {
   @Setter
   public static class Response {
     private String id;
+    private String username;
     private String name;
   }
 

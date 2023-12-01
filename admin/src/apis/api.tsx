@@ -769,6 +769,7 @@ namespace Api {
         id: number;
         name: string;
         content: string;
+        exposedRemainTime: number;
       }
     }
   }
@@ -787,6 +788,7 @@ namespace Api {
       export interface CreateHint {
         name: string;
         content: string;
+        exposedRemainTime: number;
       }
 
       export interface CreateAnswer {
@@ -837,6 +839,7 @@ namespace Api {
       export interface UpdateHint {
         name: string;
         content: string;
+        exposedRemainTime: number;
       }
 
       export interface UpdateAnswer {

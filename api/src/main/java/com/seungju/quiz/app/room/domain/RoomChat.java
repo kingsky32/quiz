@@ -5,11 +5,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "room_chat")
+@EntityListeners(AuditingEntityListener.class)
 public class RoomChat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +34,12 @@ public class RoomChat {
 
     @NotNull
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
+    @CreatedBy
     private String content;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    @CreatedDate
+    private LocalDateTime createdAt;
 
 }

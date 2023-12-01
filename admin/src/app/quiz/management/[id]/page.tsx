@@ -40,6 +40,7 @@ function Form({
       return {
         name: response.name,
         content: response.content,
+        exposedRemainTime: response.exposedRemainTime,
       };
     }),
   );
@@ -60,7 +61,7 @@ function Form({
         quizCategoryId: quizCategory.id,
         title,
         content,
-        timeoutMs,
+        timeoutMs: timeoutMs / 1000,
         isActive,
       }}
       onFinish={(values) => {
@@ -211,6 +212,29 @@ function Form({
                         );
                       }}
                     />
+                    <InputNumber
+                      style={{ width: 75 }}
+                      onKeyDown={(event) => {
+                        if (event.key.length < 2 && /[^0-9]/g.test(event.key)) {
+                          event.preventDefault();
+                        }
+                      }}
+                      formatter={(value) => {
+                        return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                      }}
+                      parser={(value) => {
+                        return `${value}`?.replace(/\$\s?|(,*)/g, '') ?? '';
+                      }}
+                      value={`${hint.exposedRemainTime}` as string}
+                      onChange={(value) => {
+                        setHints(
+                          produce((draft) => {
+                            draft[hintIndex].exposedRemainTime = Number(value);
+                          }),
+                        );
+                      }}
+                      suffix="초"
+                    />
                   </Space>
                 </Col>
                 <Col>
@@ -239,6 +263,7 @@ function Form({
                               draft.push({
                                 name: '',
                                 content: '',
+                                exposedRemainTime: 0,
                               });
                             }),
                           );

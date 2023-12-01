@@ -28,6 +28,7 @@ public class QuizDto {
         public static class Hint implements Serializable {
             private String name;
             private String content;
+            private Long exposedRemainTime;
         }
 
         @Getter
@@ -91,6 +92,7 @@ public class QuizDto {
         public static class Hint implements Serializable {
             private String name;
             private String content;
+            private Long exposedRemainTime;
         }
 
         @Getter

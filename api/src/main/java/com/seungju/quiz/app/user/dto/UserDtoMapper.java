@@ -9,5 +9,5 @@ public interface UserDtoMapper {
     UserDtoMapper INSTANCE = Mappers.getMapper(UserDtoMapper.class);
 
     UserDto.Response toResponse(Account account);
-
+    
 }

@@ -57,4 +57,9 @@ dependencies {
     implementation platform('software.amazon.awssdk:bom:2.20.101')
     implementation 'software.amazon.awssdk:s3'
     implementation 'software.amazon.awssdk:sts'
+
+    // Web Socket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
 }

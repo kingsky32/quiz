@@ -31,7 +31,7 @@ public class RoomQuizCategory {
     @Getter
     @Setter
     @Embeddable
-    public class Id implements Serializable {
+    public static class Id implements Serializable {
         private static final long serialVersionUID = 6274436089941565935L;
         @NotNull
         @Column(name = "room_id", nullable = false)

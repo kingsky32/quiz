@@ -28,6 +28,7 @@ function Page() {
     {
       name: '',
       content: '',
+      exposedRemainTime: 15,
     },
   ]);
   const [answers, setAnswers] = React.useState<Api.Quiz.Dto.CreateAnswer[]>([
@@ -55,6 +56,7 @@ function Page() {
             soundFileId: fileUploadMutation.data.data.id,
             hints,
             answers,
+            timeoutMs: values.timeoutMs * 1000,
           },
           {
             onSuccess() {
@@ -192,6 +194,29 @@ function Page() {
                         );
                       }}
                     />
+                    <InputNumber
+                      style={{ width: 75 }}
+                      onKeyDown={(event) => {
+                        if (event.key.length < 2 && /[^0-9]/g.test(event.key)) {
+                          event.preventDefault();
+                        }
+                      }}
+                      formatter={(value) => {
+                        return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                      }}
+                      parser={(value) => {
+                        return `${value}`?.replace(/\$\s?|(,*)/g, '') ?? '';
+                      }}
+                      value={`${hint.exposedRemainTime}` as string}
+                      onChange={(value) => {
+                        setHints(
+                          produce((draft) => {
+                            draft[hintIndex].exposedRemainTime = Number(value);
+                          }),
+                        );
+                      }}
+                      suffix="초"
+                    />
                   </Space>
                 </Col>
                 <Col>
@@ -220,6 +245,7 @@ function Page() {
                               draft.push({
                                 name: '',
                                 content: '',
+                                exposedRemainTime: 15,
                               });
                             }),
                           );

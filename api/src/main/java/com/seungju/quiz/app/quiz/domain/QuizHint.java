@@ -31,4 +31,8 @@ public class QuizHint {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @NotNull
+    @Column(name = "exposed_remain_time", nullable = false)
+    private Long exposedRemainTime;
+
 }

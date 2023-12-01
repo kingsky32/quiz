@@ -1,5 +1,7 @@
 package com.seungju.quiz.app.room.dto;
 
+import com.seungju.quiz.app.quiz.domain.Quiz;
+import com.seungju.quiz.app.quiz.domain.QuizHint;
 import com.seungju.quiz.app.room.domain.Room;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -18,5 +20,9 @@ public interface RoomDtoMapper {
     RoomDto.Response toResponse(Room room);
 
     RoomDto.DetailResponse toDetailResponse(Room room);
+
+    RoomDto.QuestionResponse toQuestionResponse(Quiz quiz);
+
+    RoomDto.HintResponse toHintResponse(QuizHint quizHint);
 
 }
