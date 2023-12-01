@@ -68,7 +68,7 @@ function Page() {
       },
     });
     return () => {
-      clientRef.current?.deactivate();
+      clientRef.current?.deactivate?.();
     };
   }, []);
 
