@@ -71,6 +71,7 @@ function Form({
             soundFileId: fileUploadMutation.data?.data.id ?? soundFile.id,
             hints,
             answers,
+            timeoutMs: values.timeoutMs * 1000,
           },
           {
             onSuccess() {
