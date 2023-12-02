@@ -195,9 +195,10 @@ function App() {
         <Layout.Content style={{ margin: '24px 16px 0' }}>
           <div
             style={{
-              minHeight: '100%',
+              height: '100%',
               padding: 24,
               background: colorBgContainer,
+              overflow: 'auto',
             }}
           >
             <Space
