@@ -50,9 +50,18 @@ public class RoomDto {
         private Long currentNumber;
         private Long numberOfQuiz;
         private Boolean isSecret;
+        private List<User> users;
         private List<RoomQuizCategoryDto.DetailResponse> roomQuizCategories;
         private UserDto.Response createdBy;
         private LocalDateTime createdAt;
+
+        @Getter
+        @Setter
+        public static class User implements Serializable {
+            private UserDto.Response user;
+            private Long rank;
+            private Long count;
+        }
     }
 
     @Getter

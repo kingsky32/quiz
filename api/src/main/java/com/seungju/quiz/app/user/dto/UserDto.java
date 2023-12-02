@@ -9,7 +9,7 @@ public class UserDto {
   @Getter
   @Setter
   public static class Response {
-    private String id;
+    private Long id;
     private String username;
     private String name;
   }

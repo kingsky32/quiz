@@ -113,10 +113,34 @@ public class RoomService {
         );
     }
 
+    private RoomDto.DetailResponse toDetailResponse(@NonNull Room room) {
+        RoomDto.DetailResponse response = RoomDtoMapper.INSTANCE.toDetailResponse(room);
+        List<RoomDto.DetailResponse.User> users = new ArrayList<>();
+        for (RoomQuiz roomQuiz : room.getRoomQuizzes()) {
+            for (RoomChatAnswer roomChatAnswer : roomQuiz.getRoomChatAnswers()) {
+                RoomDto.DetailResponse.User user = users.stream().filter(x -> x.getUser().getId().equals(roomChatAnswer.getRoomChat().getCreatedBy().getId())).findFirst().orElseGet(() -> {
+                    RoomDto.DetailResponse.User internalUser = new RoomDto.DetailResponse.User();
+                    internalUser.setUser(UserDtoMapper.INSTANCE.toResponse(roomChatAnswer.getRoomChat().getCreatedBy()));
+                    internalUser.setCount(0L);
+                    users.add(internalUser);
+                    return internalUser;
+                });
+                user.setCount(user.getCount() + 1);
+            }
+        }
+        users.sort((a, b) -> (int) (a.getCount() - b.getCount()));
+        for (RoomDto.DetailResponse.User user : users) {
+            user.setRank((long) users.indexOf(user) + 1);
+        }
+        response.setUsers(users);
+        return response;
+    }
+
     @Transactional(readOnly = true)
     public RoomDto.DetailResponse get(@NonNull Long id) {
         Room room = roomRepository.findById(id).orElseThrow(() -> new NotFoundException("Not found Room"));
-        return RoomDtoMapper.INSTANCE.toDetailResponse(room);
+
+        return this.toDetailResponse(room);
     }
 
     @Transactional
@@ -212,6 +236,19 @@ public class RoomService {
         if (!room.getStatus().equals(Room.Status.PLAYING)) {
             throw new ForbiddenException("can only start when the room is playing");
         }
+
+        // 소켓 스킵 넘김
+        {
+            simpMessageSendingOperations.convertAndSend("/ws/room/subscribe/" + room.getId() + "/skip", true);
+        }
+        // 소켓 정답 넘김
+        {
+            RoomQuiz roomQuiz = room.getRoomQuizzes().get(room.getRoomQuizzes().size() - 1);
+            RoomDto.AnswerResponse answerResponse = new RoomDto.AnswerResponse();
+            answerResponse.setAnswers(roomQuiz.getQuiz().getQuizAnswers().stream().map(QuizAnswer::getAnswer).toList());
+            simpMessageSendingOperations.convertAndSend("/ws/room/subscribe/" + room.getId() + "/answer", answerResponse);
+        }
+
         if (room.getNumberOfQuiz() > room.getCurrentNumber()) {
             room.setCurrentNumber(room.getCurrentNumber() + 1);
         } else {
@@ -224,9 +261,26 @@ public class RoomService {
                 x.setSchedulers(new ArrayList<>());
             });
         }
+
         room = roomRepository.save(room);
+
+        // 5초 후에 문제 불러오기
         if (room.getStatus().equals(Room.Status.PLAYING)) {
-            simpMessageSendingOperations.convertAndSend("/ws/room/subscribe/" + id + "/question", this.getQuestion(room));
+            ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+            InternalScheduler internalScheduler = internalSchedulers.stream().filter(x -> id.equals(x.getRoomId())).findFirst().orElseGet(() -> {
+                InternalScheduler scheduler = new InternalScheduler();
+                scheduler.setRoomId(id);
+                internalSchedulers.add(scheduler);
+                return scheduler;
+            });
+            final Room finalRoom = room;
+            ScheduledFuture<?> schedule = scheduledExecutorService.schedule(
+                    () -> {
+                        simpMessageSendingOperations.convertAndSend("/ws/room/subscribe/" + id + "/question", this.getQuestion(finalRoom));
+                    }, 2500,
+                    TimeUnit.MILLISECONDS
+            );
+            internalScheduler.schedulers.add(schedule);
         }
     }
 

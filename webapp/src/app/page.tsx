@@ -26,7 +26,8 @@ function Page() {
                 {response.id}
               </span>
               <span className="flex-1 text-14 font-[600] text-[#111827]">
-                {response.title}
+                {response.title} ({response.status}) ({response.currentNumber}/
+                {response.numberOfQuiz})
               </span>
               <div className="flex flex-col gap-8">
                 <span className="text-right text-14 font-[400] text-[#111827]">

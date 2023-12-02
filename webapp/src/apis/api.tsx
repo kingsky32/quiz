@@ -1007,7 +1007,7 @@ namespace Api {
   }
 
   export namespace Room {
-    enum Status {
+    export enum Status {
       READY = 'READY',
       PLAYING = 'PLAYING',
       DELETED = 'DELETED',
@@ -1036,6 +1036,12 @@ namespace Api {
         createdAt: string;
       }
 
+      export interface DetailResponseUser {
+        user: User.Dto.Response;
+        rank: number;
+        count: number;
+      }
+
       export interface DetailResponse {
         id: number;
         status: Status;
@@ -1044,6 +1050,7 @@ namespace Api {
         numberOfQuiz: number;
         isSecret: boolean;
         roomQuizCategories: RoomQuizCategory.Dto.DetailResponse[];
+        users: DetailResponseUser[];
         createdBy: User.Dto.Response;
         createdAt: string;
       }
@@ -1198,6 +1205,7 @@ namespace Api {
         chat(chat: Dto.Chat): void;
         play(): void;
         skip(): void;
+        disconnect(): void;
       }
       export function join(
         id: number,
@@ -1206,6 +1214,7 @@ namespace Api {
           onQuestion?: (question: Dto.QuestionResponse) => void;
           onHint?: (hint: Dto.HintResponse) => void;
           onAnswer?: (answer: Dto.AnswerResponse) => void;
+          onSkip?: () => void;
         },
       ): Client {
         const client = new StompJs.Client({
@@ -1226,6 +1235,9 @@ namespace Api {
             client.subscribe(`/ws/room/subscribe/${id}/answer`, (message) => {
               const data: Dto.AnswerResponse = JSON.parse(message.body);
               options?.onAnswer?.(data);
+            });
+            client.subscribe(`/ws/room/subscribe/${id}/skip`, () => {
+              options?.onSkip?.();
             });
           },
         });
@@ -1257,6 +1269,9 @@ namespace Api {
             client.publish({
               destination: `/ws/room/${id}/skip`,
             });
+          },
+          disconnect() {
+            client.deactivate();
           },
         };
       }

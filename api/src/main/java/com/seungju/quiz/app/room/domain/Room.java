@@ -71,7 +71,7 @@ public class Room {
     @OneToMany(mappedBy = "room", fetch = FetchType.EAGER)
     private List<RoomQuizCategory> roomQuizCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room")
+    @OneToMany(mappedBy = "room", fetch = FetchType.EAGER)
     private List<RoomQuiz> roomQuizzes = new ArrayList<>();
 
     public enum Status {
