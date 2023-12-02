@@ -799,7 +799,7 @@ namespace Api {
         quizCategoryId: number;
         title: string;
         content: string;
-        soundFileId: number;
+        soundFileId?: number;
         timeoutMs: number;
         isActive: boolean;
         hints: CreateHint[];

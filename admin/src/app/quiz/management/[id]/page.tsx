@@ -68,7 +68,7 @@ function Form({
         updateQuizMutation.mutate(
           {
             ...values,
-            soundFileId: fileUploadMutation.data?.data.id ?? soundFile.id,
+            soundFileId: fileUploadMutation.data?.data.id ?? soundFile?.id,
             hints,
             answers,
             timeoutMs: values.timeoutMs * 1000,

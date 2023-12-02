@@ -46,14 +46,10 @@ function Page() {
         isActive: true,
       }}
       onFinish={(values) => {
-        if (!fileUploadMutation.data) {
-          message.error('음성 파일을 등록해주세요');
-          return;
-        }
         createQuizMutation.mutate(
           {
             ...values,
-            soundFileId: fileUploadMutation.data.data.id,
+            soundFileId: fileUploadMutation.data?.data.id,
             hints,
             answers,
             timeoutMs: values.timeoutMs * 1000,
