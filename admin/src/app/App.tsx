@@ -32,7 +32,7 @@ function LoginForm() {
         });
       }}
     >
-      <Form.Item<Api.Auth.AuthDto.Login>
+      <Form.Item<Api.Auth.Dto.Login>
         label="Username"
         name="username"
         rules={[
@@ -44,7 +44,7 @@ function LoginForm() {
       >
         <Input />
       </Form.Item>
-      <Form.Item<Api.Auth.AuthDto.Login>
+      <Form.Item<Api.Auth.Dto.Login>
         label="Password"
         name="password"
         rules={[

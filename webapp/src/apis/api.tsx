@@ -817,6 +817,7 @@ namespace Api {
       export interface CreateHint {
         name: string;
         content: string;
+        exposedRemainTime: number;
       }
 
       export interface CreateAnswer {
@@ -827,7 +828,7 @@ namespace Api {
         quizCategoryId: number;
         title: string;
         content: string;
-        soundFileId: number;
+        soundFileId?: number;
         timeoutMs: number;
         isActive: boolean;
         hints: CreateHint[];
@@ -867,6 +868,7 @@ namespace Api {
       export interface UpdateHint {
         name: string;
         content: string;
+        exposedRemainTime: number;
       }
 
       export interface UpdateAnswer {
