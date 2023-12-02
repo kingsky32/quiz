@@ -50,7 +50,14 @@ function Page() {
     limit: 20,
     page: 1,
   });
-  const quizzesQuery = Api.Quiz.Query.useQuizzesQuery(params);
+  const quizzesQuery = Api.Quiz.Query.useQuizzesQuery(
+    Api.serializePageableParams({
+      ...params,
+      sort: {
+        id: Api.Pageable.Order.DESC,
+      },
+    }),
+  );
   const navigate = useNavigate();
 
   return (

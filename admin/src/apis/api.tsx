@@ -4,16 +4,16 @@ import Axios, { AxiosResponse } from 'axios';
 import dayjs from 'dayjs';
 import { useCookies } from 'react-cookie';
 import {
+  QueryClient,
+  QueryClientProvider,
   useMutation,
   useQuery,
   useQueryClient,
-  QueryClient,
-  QueryClientProvider,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import fileDownload from '../utils/fileDownload';
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const TOKEN_STORE_KEY = 'token';
 
@@ -43,7 +43,7 @@ type ContextType = [
 
 const context = React.createContext<ContextType>([null, () => {}]);
 
-const client = new QueryClient();
+const _queryClient = new QueryClient();
 
 function useContext(): ContextType {
   const [, setCookie, removeCookie] = useCookies([TOKEN_STORE_KEY]);
@@ -95,7 +95,7 @@ function useContext(): ContextType {
 }
 
 namespace Api {
-  namespace PageableDto {
+  export namespace Pageable {
     export enum Order {
       ASC = 'ASC',
       DESC = 'DESC',
@@ -160,7 +160,7 @@ namespace Api {
           _token = Axios.post<
             Jwt.TokenDto.Response,
             AxiosResponse<Jwt.TokenDto.Response>,
-            Auth.AuthDto.OauthToken
+            Auth.Dto.OauthToken
           >(
             '/api/v1/auth/oauth/token',
             {
@@ -169,7 +169,7 @@ namespace Api {
               refreshToken: token.refreshToken,
             },
             {
-              baseURL: BASE_URL,
+              baseURL: API_BASE_URL,
             },
           ).then(({ data: responseData }) => {
             callback?.(responseData);
@@ -193,7 +193,7 @@ namespace Api {
     const [token] = state;
     _token = token;
     return (
-      <QueryClientProvider client={client}>
+      <QueryClientProvider client={_queryClient}>
         <context.Provider value={state}>{children}</context.Provider>
         <ReactQueryDevtools />
       </QueryClientProvider>
@@ -204,7 +204,7 @@ namespace Api {
     const queryClient = useQueryClient();
     const axios = React.useRef(
       Axios.create({
-        baseURL: BASE_URL,
+        baseURL: API_BASE_URL,
         paramsSerializer(params) {
           return queryString.stringify(params, { arrayFormat: 'none' });
         },
@@ -256,14 +256,14 @@ namespace Api {
   export function serializePageableParams({
     sort,
     ...paramsWithoutSort
-  }: Record<any, any> & { sort?: Record<string, PageableDto.Order> }) {
+  }: Record<any, any> & { sort?: Record<string, Pageable.Order> }) {
     const params = { ...paramsWithoutSort };
     if (sort) {
       const sorts = Object.entries(sort);
       if (sorts.length) {
         params.sorts = sorts.reduce<string[]>((previousValue, [key, value]) => {
           return value
-            ? [...previousValue, `${value.toUpperCase()}|${key}`]
+            ? [...previousValue, `${key}|${value.toUpperCase()}`]
             : previousValue;
         }, []);
       }
@@ -274,15 +274,22 @@ namespace Api {
   export namespace User {
     export namespace Dto {
       export interface Response {
-        id: string;
+        id: number;
+        username: string;
         name: string;
       }
     }
   }
 
   export namespace Auth {
-    export namespace AuthDto {
+    export namespace Dto {
       export interface Login {
+        username: string;
+        password: string;
+      }
+      export interface Join {
+        email: string;
+        name: string;
         username: string;
         password: string;
       }
@@ -326,12 +333,33 @@ namespace Api {
         const queryClient = useQueryClient();
         const [, setToken] = useContext();
         return useMutation({
-          mutationFn(variables: AuthDto.Login) {
+          mutationFn(variables: Dto.Login) {
             return axios.post<
-              AuthDto.LoginResponse,
-              AxiosResponse<AuthDto.LoginResponse>,
-              AuthDto.Login
+              Dto.LoginResponse,
+              AxiosResponse<Dto.LoginResponse>,
+              Dto.Login
             >('/api/v1/auth/login', variables);
+          },
+          onSuccess({ data: responseData }) {
+            setToken(responseData);
+          },
+          onSettled() {
+            return queryClient.resetQueries();
+          },
+        });
+      }
+
+      export function useJoinMutation() {
+        const axios = useAxios();
+        const queryClient = useQueryClient();
+        const [, setToken] = useContext();
+        return useMutation({
+          mutationFn(variables: Dto.Join) {
+            return axios.post<
+              Dto.LoginResponse,
+              AxiosResponse<Dto.LoginResponse>,
+              Dto.Join
+            >('/api/v1/auth/join', variables);
           },
           onSuccess({ data: responseData }) {
             setToken(responseData);
@@ -348,7 +376,7 @@ namespace Api {
         const [token, setToken] = useContext();
         return useMutation({
           mutationFn() {
-            return axios.post<boolean, AxiosResponse<boolean>, AuthDto.Logout>(
+            return axios.post<boolean, AxiosResponse<boolean>, Dto.Logout>(
               '/api/v1/auth/logout',
               {
                 jti: token?.jti as string,
@@ -371,7 +399,7 @@ namespace Api {
     const chunkSize = 5 * 1024 * 1024;
 
     export function getFilePath(id: number) {
-      return `${BASE_URL}/api/v1/file/${id}`;
+      return `${API_BASE_URL}/api/v1/file/${id}`;
     }
 
     export namespace Dto {
@@ -769,7 +797,6 @@ namespace Api {
         id: number;
         name: string;
         content: string;
-        exposedRemainTime: number;
       }
     }
   }
@@ -788,7 +815,6 @@ namespace Api {
       export interface CreateHint {
         name: string;
         content: string;
-        exposedRemainTime: number;
       }
 
       export interface CreateAnswer {
@@ -799,14 +825,14 @@ namespace Api {
         quizCategoryId: number;
         title: string;
         content: string;
-        soundFileId?: number;
+        soundFileId: number;
         timeoutMs: number;
         isActive: boolean;
         hints: CreateHint[];
         answers: CreateAnswer[];
       }
 
-      export interface Request extends PageableDto.Page.Request {}
+      export interface Request extends Pageable.Page.Request {}
 
       export interface Response {
         id: number;
@@ -839,7 +865,6 @@ namespace Api {
       export interface UpdateHint {
         name: string;
         content: string;
-        exposedRemainTime: number;
       }
 
       export interface UpdateAnswer {
@@ -872,7 +897,7 @@ namespace Api {
         return useQuery({
           queryKey: [QUERY_KEY.QUIZ, params],
           queryFn() {
-            return axios.get<PageableDto.Page.Response<Dto.Response>>(
+            return axios.get<Pageable.Page.Response<Dto.Response>>(
               '/api/v1/quiz',
               {
                 params,
@@ -960,6 +985,213 @@ namespace Api {
           onSettled() {
             return queryClient.invalidateQueries({
               queryKey: [Query.QUERY_KEY.QUIZ],
+            });
+          },
+        });
+      }
+    }
+  }
+
+  export namespace RoomQuizCategory {
+    export namespace Dto {
+      export interface Response {
+        quizCategory: QuizCategory.Dto.Response;
+      }
+
+      export interface DetailResponse {
+        quizCategory: QuizCategory.Dto.Response;
+      }
+    }
+  }
+
+  export namespace Room {
+    export enum Status {
+      READY = 'READY',
+      PLAYING = 'PLAYING',
+      DELETED = 'DELETED',
+    }
+
+    export namespace Dto {
+      export interface Create {
+        title: string;
+        numberOfQuiz: number;
+        isSecret: boolean;
+        secretPassword: string;
+        quizCategoryIds: number[];
+      }
+
+      export interface Request extends Pageable.Cursor.Request<number> {}
+
+      export interface Response {
+        id: number;
+        status: Status;
+        title: string;
+        currentNumber: number;
+        numberOfQuiz: number;
+        isSecret: boolean;
+        roomQuizCategories: RoomQuizCategory.Dto.Response[];
+        createdBy: User.Dto.Response;
+        createdAt: string;
+      }
+
+      export interface DetailResponseUser {
+        user: User.Dto.Response;
+        rank: number;
+        count: number;
+      }
+
+      export interface DetailResponse {
+        id: number;
+        status: Status;
+        title: string;
+        currentNumber: number;
+        numberOfQuiz: number;
+        isSecret: boolean;
+        roomQuizCategories: RoomQuizCategory.Dto.DetailResponse[];
+        users: DetailResponseUser[];
+        createdBy: User.Dto.Response;
+        createdAt: string;
+      }
+
+      export interface Update {
+        title: string;
+        numberOfQuiz: number;
+        isSecret: boolean;
+        secretPassword: string;
+        quizCategoryIds: number[];
+      }
+
+      export interface DeleteAll {
+        ids: number[];
+      }
+
+      export interface Chat {
+        roomId: number;
+        accountId: number;
+        message: string;
+      }
+
+      export interface ChatResponse {
+        user: User.Dto.Response;
+        isCorrect: boolean;
+        message: boolean;
+      }
+
+      export interface QuestionResponse {
+        title: string;
+        content: string;
+        soundFile: File.Dto.Response;
+        timeoutMs: number;
+        createdBy: User.Dto.Response;
+      }
+
+      export interface HintResponse {
+        id: number;
+        name: string;
+        content: string;
+      }
+
+      export interface AnswerResponse {
+        answers: string[];
+      }
+    }
+
+    export namespace Query {
+      export const QUERY_KEY = {
+        ROOM: 'ROOM',
+      };
+
+      export function useRoomsQuery(params: Dto.Request) {
+        const axios = useAxios();
+        return useQuery({
+          queryKey: [QUERY_KEY.ROOM, params],
+          queryFn() {
+            return axios.get<Pageable.Cursor.Response<number, Dto.Response>>(
+              '/api/v1/room',
+              { params },
+            );
+          },
+        });
+      }
+
+      export function useRoomQuery(id?: number) {
+        const axios = useAxios();
+        return useQuery({
+          queryKey: [QUERY_KEY.ROOM, id],
+          queryFn() {
+            return axios.get<Dto.DetailResponse>(`/api/v1/room/${id}`);
+          },
+          enabled: !!id,
+        });
+      }
+    }
+
+    export namespace Mutation {
+      export function useCreateRoomMutation() {
+        const queryClient = useQueryClient();
+        const axios = useAxios();
+        return useMutation({
+          mutationFn(variables: Dto.Create) {
+            return axios.post<
+              Dto.DetailResponse,
+              AxiosResponse<Dto.DetailResponse>,
+              Dto.Create
+            >('/api/v1/room', variables);
+          },
+          onSettled() {
+            return queryClient.invalidateQueries({
+              queryKey: [Query.QUERY_KEY.ROOM],
+            });
+          },
+        });
+      }
+
+      export function useUpdateRoomMutation(id?: number) {
+        const queryClient = useQueryClient();
+        const axios = useAxios();
+        return useMutation({
+          mutationFn(variables: Dto.Update) {
+            return axios.put<
+              Dto.DetailResponse,
+              AxiosResponse<Dto.DetailResponse>,
+              Dto.Update
+            >(`/api/v1/room/${id}`, variables);
+          },
+          onSettled() {
+            return queryClient.invalidateQueries({
+              queryKey: [Query.QUERY_KEY.ROOM],
+            });
+          },
+        });
+      }
+
+      export function useDeleteRoomMutation() {
+        const queryClient = useQueryClient();
+        const axios = useAxios();
+        return useMutation({
+          mutationFn(variables: number) {
+            return axios.delete(`/api/v1/room/${variables}`);
+          },
+          onSettled() {
+            return queryClient.invalidateQueries({
+              queryKey: [Query.QUERY_KEY.ROOM],
+            });
+          },
+        });
+      }
+
+      export function useDeleteRoomsMutation() {
+        const queryClient = useQueryClient();
+        const axios = useAxios();
+        return useMutation({
+          mutationFn(variables: number[]) {
+            return axios.delete('/api/v1/room', {
+              params: variables,
+            });
+          },
+          onSettled() {
+            return queryClient.invalidateQueries({
+              queryKey: [Query.QUERY_KEY.ROOM],
             });
           },
         });
