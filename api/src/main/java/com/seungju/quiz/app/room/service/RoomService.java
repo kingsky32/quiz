@@ -26,6 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -123,7 +124,8 @@ public class RoomService {
         Restriction restriction = new Restriction();
         restriction.in("quizCategory.id", room.getRoomQuizCategories().stream().map(x -> x.getQuizCategory().getId()).toList());
 //        restriction.notIn("roomQuizzes.quiz.id", room.getRoomQuizzes().stream().map(x -> x.getQuiz().getId()).toList());
-        Quiz quiz = quizRepository.findOne(restriction.output()).orElseThrow(() -> new NotFoundException("Not found Quiz"));
+        List<Quiz> quizzes = quizRepository.findAll(restriction.output());
+        Quiz quiz = quizzes.get(new Random().nextInt(quizzes.size()));
         RoomQuiz roomQuiz = new RoomQuiz();
         roomQuiz.setRoom(room);
         roomQuiz.setQuiz(quiz);
